@@ -38,6 +38,13 @@ def main() -> None:
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8", newline="") as f:
         f.write(text)
+    # Read-back verification: the file on disk must be byte-identical to
+    # the entry, so a silent write failure can never pass the gate.
+    with open(OUT_PATH, "rb") as f:
+        on_disk = f.read()
+    assert on_disk == text.encode("utf-8"), "written file differs from entry"
+    assert not on_disk.endswith(b"\n"), "no trailing newline allowed"
+    assert len(on_disk) == len(text), "byte/char length mismatch (non-ASCII?)"
     print(f"wrote {OUT_PATH} ({len(text)} chars)")
 
 
